@@ -1,71 +1,15 @@
 #include <stdio.h>
-#include <stdlib.h>  /* for exit, malloc, realloc */
-#include <ctype.h>   /* for isspace */
-#include <string.h>  /* for strdup */
-
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
 #include "scanner.h"
-
-/* VERSION 1.2
- *
- * scanner.c - a collection of input routines for C
- *           - written by John C. Lusth
- *           - in general, the functions return what is implied by their names
- *
- *    readInt(FILE *) 
- *      - wrapper for fscanf(fp,"%d")
- *      - returns 0 if end of file, but feof will subsequently return true
- *      - usage example: int x = readInt(stdin);
- *    readReal(FILE *) 
- *      - wrapper for fscanf(fp,"%lf")
- *      - returns a double
- *      - returns 0.0 if read fails due to end of file,
- *        but feof will subsequently return true
- *      - usage example: double x = readReal(stdin);
- *    readChar(FILE *) 
- *      - wrapper for fscanf(fp," %c")
- *      - returns a non-whitespace character
- *      - returns 0 if end of file; feof will subsequently return true
- *      - usage example: char x = readChar(stdin);
- *    readRawChar(FILE *fp) 
- *      - wrapper for fscanf(fp,"%c")
- *      - returns a character, whether whitespace or non-whitespace
- *      - returns 0 if end of file; feof will subsequently return true
- *      - usage example: char x = readRawChar(stdin);
- *    readToken(FILE *fp) 
- *      - safe version of fscanf(fp,"%s")
- *      - returns a malloc'd string
- *        the caller should free the returned string
- *      - returns 0 if end of file; feof will subsequently return true
- *      - usage example: char *x = readToken(stdin);
- *    readString(FILE *fp) 
- *      - reads in a double quoted string
- *      - returns a malloc'd string; the quotation marks are not included
- *        the caller should free the returned string
- *      - returns 0 if end of file; feof will subsequently return true
- *      - usage example: char *x = readString(stdin);
- *    readLine(FILE *fp) 
- *      - reads in a line or remainder of a line
- *      - returns a malloc'd string; the newline is not included
- *        the caller should free the returned string
- *      - returns 0 if end of file; feof will subsequently return true
- *      - usage example: char *x = readLine(stdin);
- *    allocate(size_t size) 
- *      - wrapper for malloc that will generate an out of memory error
- *      - usage example: int *x = (int *) allocate(sizeof(int) * count);
- *    reallocate(void *items,size_t size) 
- *      - wrapper for realloc that will generate an out of memory error
- *      - usage example: x = (int *) reallocate(x,sizeof(int) * count);
- */
 
 static void skipWhiteSpace(FILE *);
 static char convertEscapedChar(int);
 static void *allocateMsg(size_t,char *);
 static void *reallocateMsg(void *,size_t,char *);
 
-/********** public functions **********************/
-
-int
-readInt(FILE *fp)
+int readInt(FILE *fp)
     {
     int x,result;
     result = fscanf(fp,"%d",&x);
@@ -146,14 +90,10 @@ readString(FILE *fp)
     char *buffer;
     int size = 512;
 
-    /* advance to the double quote */
-
     skipWhiteSpace(fp);
 
     ch = fgetc(fp);
     if (ch == EOF) return 0;
-
-    /* allocate the buffer */
 
     buffer = allocateMsg(size,"readString");
 
@@ -164,15 +104,9 @@ readString(FILE *fp)
         exit(4);
         }
 
-    /* toss the double quote, skip to the next character */
-
     ch = fgetc(fp);
 
-    /* initialize the buffer index */
-
     index = 0;
-
-    /* collect characters until the closing double quote */
 
     while (ch != '\"')
         {
@@ -238,8 +172,6 @@ readToken(FILE *fp)
         ch = fgetc(fp);
         }
 
-    /* push back the character that got us out of this loop */
-
     ungetc(ch,fp);
     buffer[index] = '\0';
 
@@ -277,19 +209,13 @@ readLine(FILE *fp)
     return buffer;
     }
 
-/********** private functions **********************/
-
 static void
 skipWhiteSpace(FILE *fp)
     {
     int ch;
 
-    /* read chars until a non-whitespace character is encountered */
-
     while ((ch = fgetc(fp)) != EOF && isspace(ch))
         continue;
-
-    /* a non-space character got us out of the loop, so push it back */
 
     ungetc(ch,fp);
     }
@@ -365,4 +291,3 @@ reallocateMsg(void *s,size_t size,char *where)
 
     return t;
     }
-
